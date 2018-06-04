@@ -23,12 +23,7 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using KSP.IO;
 
 namespace WhitecatIndustries
 {
@@ -36,9 +31,9 @@ namespace WhitecatIndustries
     public class SCSManager : MonoBehaviour
     {
         public static ConfigNode SolarCycles = new ConfigNode();
-        public static int CycleCount = 0;
+        public static int CycleCount;
         public static bool KerbinTime = GameSettings.KERBIN_TIME;
-        public static double SecondsInYear = 0;
+        public static double SecondsInYear;
 
         public void Start() 
         {
@@ -47,14 +42,7 @@ namespace WhitecatIndustries
 
             if ((HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION || HighLogic.LoadedScene == GameScenes.FLIGHT))
             {
-                if (KerbinTime)
-                {
-                    SecondsInYear = 9203545;
-                }
-                else
-                {
-                    SecondsInYear = 31557600;
-                }
+                SecondsInYear = KerbinTime ? 9203545 : 31557600;
 
                 SCSData.LoadInfo();
                 print("WhitecatIndustries SCS - Solar Cycle Data Loaded");
@@ -71,108 +59,93 @@ namespace WhitecatIndustries
 
         public void FixedUpdate()
         {
-            if (Time.timeSinceLevelLoad > 1.5)
+            if (!(Time.timeSinceLevelLoad > 1.5)) return;
+            if ((HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION || HighLogic.LoadedScene == GameScenes.FLIGHT))
             {
-                if ((HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION || HighLogic.LoadedScene == GameScenes.FLIGHT))
-                {
-                    SystemManage();
-                }
+                SystemManage();
             }
         }
 
         public void OnDestroy()
         {
             //if (SpaceCenter.Instance.isActiveAndEnabled) // Fix on load RSS deletions!
-             if ((Planetarium.GetUniversalTime() == HighLogic.CurrentGame.UniversalTime) || HighLogic.LoadedScene == GameScenes.FLIGHT)
-            {
-                if ((HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION || HighLogic.LoadedScene == GameScenes.FLIGHT))
-                {
-                    SCSData.SaveInfo();
-                    print("WhitecatIndustries SCS - Saving to .cfg");
-                }
-            }
+            if ((Planetarium.GetUniversalTime() != HighLogic.CurrentGame.UniversalTime) &&
+                HighLogic.LoadedScene != GameScenes.FLIGHT) return;
+            if ((HighLogic.LoadedScene != GameScenes.SPACECENTER &&
+                 HighLogic.LoadedScene != GameScenes.TRACKSTATION &&
+                 HighLogic.LoadedScene != GameScenes.FLIGHT)) return;
+            SCSData.SaveInfo();
+            print("WhitecatIndustries SCS - Saving to .cfg");
         }
 
         public void SystemManage()
         {
-            if (SolarCycles.nodes.Count != 0)
+            if (SolarCycles.nodes.Count == 0) return;
+            ConfigNode Cycle = new ConfigNode();
+            ConfigNode ListNode = new ConfigNode();
+
+            Cycle = FetchCurrentCycle();
+            ListNode = Cycle;
+
             {
-                ConfigNode Cycle = new ConfigNode();
-                ConfigNode ListNode = new ConfigNode();
+                double Duration = double.Parse(Cycle.GetValue("Duration"));
+                double CurrentCycleStartTime = double.Parse(Cycle.GetValue("StartTime"));
+                double CurrentCycleEndTime = double.Parse(Cycle.GetValue("EndTime"));
+                double PercentThrough = (((HighLogic.CurrentGame.UniversalTime + 1.0) - CurrentCycleStartTime) / Duration) * 100; // Maybe Needs work 
 
-                Cycle = FetchCurrentCycle();
-                ListNode = Cycle;
-
+                if (CurrentCycleEndTime == null) return;
+                if (HighLogic.CurrentGame.UniversalTime >= CurrentCycleEndTime)
                 {
-                    double Duration = double.Parse(Cycle.GetValue("Duration"));
-                    double CurrentCycleStartTime = double.Parse(Cycle.GetValue("StartTime"));
-                    double CurrentCycleEndTime = double.Parse(Cycle.GetValue("EndTime"));
-                    double PercentThrough = (((HighLogic.CurrentGame.UniversalTime + 1.0) - CurrentCycleStartTime) / Duration) * 100; // Maybe Needs work 
+                    print("WhitecatIndustries SCS - Solar Cycle Complete");
+                    EndCurrentCycle(Cycle);
+                    StartNewCycle();
+                }
+                else
+                {
+                    float BasicCycleEquation = Mathf.Cos(((Mathf.PI * 2) / (float)(Duration) * (float)((HighLogic.CurrentGame.UniversalTime + 1.0) - CurrentCycleStartTime)));
+                    double MaxF107 = double.Parse(Cycle.GetValue("MaxF107"));
+                    double MinF107 = double.Parse(Cycle.GetValue("MinF107"));
+                    double MinAp = double.Parse(Cycle.GetValue("MinAp"));
+                    double MaxAp = double.Parse(Cycle.GetValue("MaxAp"));
+                    double MinIPMF = double.Parse(Cycle.GetValue("MinIPMF"));
+                    double MaxIPMF = double.Parse(Cycle.GetValue("MaxIPMF"));
+                    double MinIrradiance = double.Parse(Cycle.GetValue("MinIrradiance"));
+                    double MaxIrradiance = double.Parse(Cycle.GetValue("MaxIrradiance"));
+                    double MinSunSpots = double.Parse(Cycle.GetValue("MinSunSpots"));
+                    double MaxSunSpots = double.Parse(Cycle.GetValue("MaxSunSpots"));
 
-                    if (CurrentCycleEndTime != null)
-                    {
-                        if (HighLogic.CurrentGame.UniversalTime >= CurrentCycleEndTime)
-                        {
-                            print("WhitecatIndustries SCS - Solar Cycle Complete");
-                            EndCurrentCycle(Cycle);
-                            StartNewCycle();
-                        }
+                    double CurrentF107 = (((MaxF107 - MinF107) / 2) + MinF107) + (((MaxF107 - MinF107) / 2) * BasicCycleEquation);
+                    double CurrentAp = (((MaxAp - MinAp) / 2) + MinAp) + (((MaxAp - MinAp) / 2) * BasicCycleEquation);
+                    double CurrentIPMF = (((MaxIPMF - MinIPMF) / 2) + MinIPMF) + (((MaxIPMF - MinIPMF) / 2) * BasicCycleEquation);
+                    double CurrentIrradiance = (((MaxIrradiance - MinIrradiance) / 2) + MinIrradiance) + (((MaxIrradiance - MinIrradiance) / 2) * BasicCycleEquation);
+                    double CurrentSunSpots = (((MaxSunSpots - MinSunSpots) / 2) + MinSunSpots) + (((MaxSunSpots - MinSunSpots) / 2) * BasicCycleEquation);
 
-                        else
-                        {
-                            float BasicCycleEquation = Mathf.Cos(((Mathf.PI * 2) / (float)(Duration) * (float)((HighLogic.CurrentGame.UniversalTime + 1.0) - CurrentCycleStartTime)));
-                            double MaxF107 = double.Parse(Cycle.GetValue("MaxF107"));
-                            double MinF107 = double.Parse(Cycle.GetValue("MinF107"));
-                            double MinAp = double.Parse(Cycle.GetValue("MinAp"));
-                            double MaxAp = double.Parse(Cycle.GetValue("MaxAp"));
-                            double MinIPMF = double.Parse(Cycle.GetValue("MinIPMF"));
-                            double MaxIPMF = double.Parse(Cycle.GetValue("MaxIPMF"));
-                            double MinIrradiance = double.Parse(Cycle.GetValue("MinIrradiance"));
-                            double MaxIrradiance = double.Parse(Cycle.GetValue("MaxIrradiance"));
-                            double MinSunSpots = double.Parse(Cycle.GetValue("MinSunSpots"));
-                            double MaxSunSpots = double.Parse(Cycle.GetValue("MaxSunSpots"));
+                    Cycle.SetValue("BasicCycleEquation", BasicCycleEquation.ToString());
+                    Cycle.SetValue("PercentThrough", PercentThrough.ToString());
+                    Cycle.SetValue("CurrentF107", CurrentF107.ToString());
+                    Cycle.SetValue("CurrentAp", CurrentAp.ToString());
+                    Cycle.SetValue("CurrentIPMF", CurrentIPMF.ToString());
+                    Cycle.SetValue("CurrentIrradiance", CurrentIrradiance.ToString());
+                    Cycle.SetValue("CurrentSunSpots", CurrentSunSpots.ToString());
 
-                            double CurrentF107 = (((MaxF107 - MinF107) / 2) + MinF107) + (((MaxF107 - MinF107) / 2) * BasicCycleEquation);
-                            double CurrentAp = (((MaxAp - MinAp) / 2) + MinAp) + (((MaxAp - MinAp) / 2) * BasicCycleEquation);
-                            double CurrentIPMF = (((MaxIPMF - MinIPMF) / 2) + MinIPMF) + (((MaxIPMF - MinIPMF) / 2) * BasicCycleEquation);
-                            double CurrentIrradiance = (((MaxIrradiance - MinIrradiance) / 2) + MinIrradiance) + (((MaxIrradiance - MinIrradiance) / 2) * BasicCycleEquation);
-                            double CurrentSunSpots = (((MaxSunSpots - MinSunSpots) / 2) + MinSunSpots) + (((MaxSunSpots - MinSunSpots) / 2) * BasicCycleEquation);
-
-                            Cycle.SetValue("BasicCycleEquation", BasicCycleEquation.ToString());
-                            Cycle.SetValue("PercentThrough", PercentThrough.ToString());
-                            Cycle.SetValue("CurrentF107", CurrentF107.ToString());
-                            Cycle.SetValue("CurrentAp", CurrentAp.ToString());
-                            Cycle.SetValue("CurrentIPMF", CurrentIPMF.ToString());
-                            Cycle.SetValue("CurrentIrradiance", CurrentIrradiance.ToString());
-                            Cycle.SetValue("CurrentSunSpots", CurrentSunSpots.ToString());
-
-                            SolarCycles.AddNode(Cycle);
-                            SolarCycles.RemoveNode(ListNode);
-                        }
-                    }
+                    SolarCycles.AddNode(Cycle);
+                    SolarCycles.RemoveNode(ListNode);
                 }
             }
         }
 
         public static bool CheckPersistence(ConfigNode node)
         {
-            bool CorrectGame = false;
-            if (node.GetValue("Persistence") == HighLogic.SaveFolder.ToString())
-            {
-                CorrectGame = true;
-            }
-            return CorrectGame;
+            return node.GetValue("Persistence") == HighLogic.SaveFolder;
         }
 
         public void EndCurrentCycle(ConfigNode Cycle)
         {
             foreach (ConfigNode node in SolarCycles.GetNodes("CYCLE"))
             {
-                if (node.GetValue("Id") == Cycle.GetValue("Id") && CheckPersistence(node) == true)
-                {
-                    node.SetValue("CurrentCycle", false.ToString());
-                    node.SetValue("PercentThrough", "100.0");
-                }
+                if (node.GetValue("Id") != Cycle.GetValue("Id") || CheckPersistence(node) != true) continue;
+                node.SetValue("CurrentCycle", false.ToString());
+                node.SetValue("PercentThrough", "100.0");
             }
             print("WhitecatIndustries SCS - Ending solar cycle");
         }
@@ -184,21 +157,20 @@ namespace WhitecatIndustries
 
             foreach (ConfigNode node in SolarCycles.GetNodes("CYCLE"))
             {
-                if (bool.Parse(node.GetValue("CurrentCycle")) == true && CheckPersistence(node) == true)
-                {
-                    Cycle = node;
-                    found = true;
-                    break;
-                }
+                if (!bool.Parse(node.GetValue("CurrentCycle")) || !CheckPersistence(node)) continue;
+                Cycle = node;
+                found = true;
+                break;
             }
 
-            if (found == false) // If the Cycle does not exist
+            // If the Cycle does not exist
+            if (!found)
             {
                 StartNewCycle();
 
                 foreach (ConfigNode node in SolarCycles.GetNodes("CYCLE"))
                 {
-                    if (bool.Parse(node.GetValue("CurrentCycle")) == true && CheckPersistence(node) == true)
+                    if (bool.Parse(node.GetValue("CurrentCycle")) && CheckPersistence(node))
                     {
                         Cycle = node;
                     }
@@ -210,26 +182,25 @@ namespace WhitecatIndustries
 
         public static void StartNewCycle()
         {
-            ConfigNode Cycle = new ConfigNode("CYCLE");
 
             string Name = "Solar Cycle- " + (CycleCount + 1); 
             double Id = CycleCount + 1 ;
             bool CurrentCycle = true;
-            double Duration = UnityEngine.Random.Range((float)(9.2 * SecondsInYear), (float)(12.9 * SecondsInYear));
+            double Duration = Random.Range((float)(9.2 * SecondsInYear), (float)(12.9 * SecondsInYear));
             double CurrentCycleStartTime = HighLogic.CurrentGame.UniversalTime;
             double MaximumTime = (CurrentCycleStartTime + (Duration / 2));
             double EndTime = CurrentCycleStartTime + Duration;
             float BasicCycleEquation = Mathf.Cos(((Mathf.PI * 2) / (float)(Duration) * (float)((HighLogic.CurrentGame.UniversalTime + 1.0) - CurrentCycleStartTime)));
-            double MaxF107 = UnityEngine.Random.Range(180f, 240f);
-            double MinF107 = UnityEngine.Random.Range(40f, 80f);
-            double MaxAp = UnityEngine.Random.Range(20f, 30f);
-            double MinAp = UnityEngine.Random.Range(3f, 7f);
-            double MaxIPMF = UnityEngine.Random.Range(9f, 11f);
-            double MinIPMF = UnityEngine.Random.Range(5f, 7f);
-            double MaxIrradiance = UnityEngine.Random.Range(1366.25f, 1366.5f);
-            double MinIrradiance = UnityEngine.Random.Range(1365.5f, 1365.75f);
-            double MaxSunSpots = UnityEngine.Random.Range(300f, 150f);
-            double MinSunSpots = UnityEngine.Random.Range(1f, 25f);
+            double MaxF107 = Random.Range(180f, 240f);
+            double MinF107 = Random.Range(40f, 80f);
+            double MaxAp = Random.Range(20f, 30f);
+            double MinAp = Random.Range(3f, 7f);
+            double MaxIPMF = Random.Range(9f, 11f);
+            double MinIPMF = Random.Range(5f, 7f);
+            double MaxIrradiance = Random.Range(1366.25f, 1366.5f);
+            double MinIrradiance = Random.Range(1365.5f, 1365.75f);
+            double MaxSunSpots = Random.Range(300f, 150f);
+            double MinSunSpots = Random.Range(1f, 25f);
 
             double PercentThrough = (((HighLogic.CurrentGame.UniversalTime + 1.0) - CurrentCycleStartTime) / Duration) * 100; // Maybe Needs work 
 
@@ -239,6 +210,7 @@ namespace WhitecatIndustries
             double CurrentIrradiance = (((MaxIrradiance - MinIrradiance) / 2) + MinIrradiance) + (((MaxIrradiance - MinIrradiance) / 2) * BasicCycleEquation);
             double CurrentSunSpots = (((MaxSunSpots - MinSunSpots) / 2) + MinSunSpots) + (((MaxSunSpots - MinSunSpots) / 2) * BasicCycleEquation);
 
+            ConfigNode Cycle = new ConfigNode("CYCLE");
             Cycle.AddValue("Persistence", HighLogic.SaveFolder.ToString());
             Cycle.AddValue("Name", Name);
             Cycle.AddValue("Id", Id.ToString());

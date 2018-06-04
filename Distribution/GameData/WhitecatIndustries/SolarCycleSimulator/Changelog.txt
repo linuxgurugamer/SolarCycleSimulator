@@ -1,0 +1,18 @@
+Version 1.1.0 - 4 Jun 2018
+ - Change of mod support from Whitecat106 to Papa_Joe
+ - Recompiled for KSP 1.4.3
+ - Project refactored to allow for automated build and deploy
+ - Added proper change log
+ - Added SolarCycleSimulator.version file for supporting KSP-AVC
+ - Relocated data.cfg file to Plugins/PluginData prevent loss of caching in module manager.  Source:  forum post:
+   https://forum.kerbalspaceprogram.com/index.php?/topic/138281-11-solar-cycle-simulator-102-actually-made-it-work-silly-me/&do=findComment&comment=2615279
+
+ Version 1.0.2 - 1 May 2016
+ - Recompiled to support 1.1.x
+ - Adjusted file structure so mod works correctly
+
+Version 1.0.1 - 28 Apr 2016
+ - bug fix for accidental cycle restarts
+
+Version 1.0.0 - 27 Apr 2016
+ - Initial Release 
