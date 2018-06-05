@@ -23,10 +23,6 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using KSP.UI.Screens;
 
@@ -38,11 +34,11 @@ namespace WhitecatIndustries
         public static ApplicationLauncherButton button = null;
         public static Rect windowPosition = new Rect(300, 60, 220, 300);
         public static Rect detailsWindowPosition = new Rect(300, 400, 200, 230);
-        private static GUIStyle windowStyle = new GUIStyle(HighLogic.Skin.window);
-        private static GUIStyle labelStyle = new GUIStyle(HighLogic.Skin.label);
-        private static GUIStyle labelStyleSmall = new GUIStyle(HighLogic.Skin.label) { fontSize = 20 };
-        private static GUIStyle buttonStyle = new GUIStyle(HighLogic.Skin.button);
-        private static GUIStyle scrollStyle = new GUIStyle(HighLogic.Skin.scrollView);
+        private static GUIStyle windowStyle;
+        private static GUIStyle labelStyle;
+        private static GUIStyle labelStyleSmall;
+        private static GUIStyle buttonStyle;
+        private static GUIStyle scrollStyle;
         private static Vector2 scrollPos = Vector2.zero;
         private static Texture texture = null;
         private static bool showGui = false;
@@ -52,6 +48,12 @@ namespace WhitecatIndustries
 
         void Awake()
         {
+            windowStyle = new GUIStyle(HighLogic.Skin.window);
+            labelStyle = new GUIStyle(HighLogic.Skin.label);
+            labelStyleSmall = new GUIStyle(HighLogic.Skin.label) { fontSize = 20 };
+            buttonStyle = new GUIStyle(HighLogic.Skin.button);
+            scrollStyle = new GUIStyle(HighLogic.Skin.scrollView);
+
             GameEvents.onGUIApplicationLauncherReady.Remove(ReadyEvent);
             GameEvents.onGUIApplicationLauncherReady.Add(ReadyEvent);
             GameEvents.onGUIApplicationLauncherDestroyed.Remove(DestroyEvent);
@@ -63,7 +65,7 @@ namespace WhitecatIndustries
             if (ApplicationLauncher.Ready && button == null)
             {
                 var Scene = ApplicationLauncher.AppScenes.TRACKSTATION;
-                texture = GameDatabase.Instance.GetTexture("WhitecatIndustries/SCS/Icons/Icon", false);
+                texture = GameDatabase.Instance.GetTexture("WhitecatIndustries/SolarCycleSimulator/Icons/Icon", false);
                 button = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null, Scene, texture);
             }
         }

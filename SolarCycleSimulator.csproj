@@ -52,7 +52,6 @@
     <Compile Include="SCSWindow.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Distribution\GameData\SolarCycleSimulator.version" />
     <None Include="Distribution\GameData\WhitecatIndustries\SolarCycleSimulator\Plugins\PluginData\Data.cfg" />
     <None Include="Distribution\GameData\WhitecatIndustries\SolarCycleSimulator\SolarCycleSimulator.version" />
   </ItemGroup>
@@ -83,6 +82,7 @@ set /p DIST_DIR=&lt;"$(ProjectDir)LocalDev\dist_dir.txt"
 
 @echo distributing $(Targetname) files...
 copy /Y "$(TargetPath)" "$(ProjectDir)Distribution\GameData\\WhitecatIndustries\$(Targetname)\Plugins\"
+xcopy /E /Y "$(ProjectDir)Distribution\GameData\WhitecatIndustries\$(Targetname)" "%25KSP_DIR%25\GameData\WhitecatIndustries\$(Targetname)"
 
 @echo building $(Targetname).dll.mdb file...
 cd "$(TargetDir)"

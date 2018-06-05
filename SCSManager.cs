@@ -69,8 +69,8 @@ namespace WhitecatIndustries
         public void OnDestroy()
         {
             //if (SpaceCenter.Instance.isActiveAndEnabled) // Fix on load RSS deletions!
-            if ((Planetarium.GetUniversalTime() != HighLogic.CurrentGame.UniversalTime) &&
-                HighLogic.LoadedScene != GameScenes.FLIGHT) return;
+            if (HighLogic.LoadedScene != GameScenes.FLIGHT && 
+                Planetarium.GetUniversalTime() != HighLogic.CurrentGame.UniversalTime) return;
             if ((HighLogic.LoadedScene != GameScenes.SPACECENTER &&
                  HighLogic.LoadedScene != GameScenes.TRACKSTATION &&
                  HighLogic.LoadedScene != GameScenes.FLIGHT)) return;

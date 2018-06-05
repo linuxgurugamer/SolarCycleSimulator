@@ -1,12 +1,12 @@
 {
     "NAME": "SolarCycleSimulator",
-    "URL": "https://github.com/PapaJoesSoup/SolarCycleSimulator/blob/master/Distribution/GameData/SCS/SolarCycleSimulator.version",
+    "URL": "https://github.com/PapaJoesSoup/SolarCycleSimulator/tree/master/Distribution/GameData/WhitecatIndustries/SolarCycleSimulator/SolarCycleSimulator.version",
     "DOWNLOAD": "https://github.com/PapaJoesSoup/SolarCycleSimulator/releases",
-    "CHANGE_LOG_URL": "https://github.com/PapaJoesSoup/SolarCycleSimulator/blob/master/Distribution/GameData/SCS/ChangeLog.txt",
+    "CHANGE_LOG_URL": "https://github.com/PapaJoesSoup/SolarCycleSimulator/tree/master/Distribution/GameData/WhitecatIndustries/SolarCycleSimulator/ChangeLog.txt",
     "VERSION": {
         "MAJOR": 1,
-        "MINOR": 0,
-        "PATCH": 1,
+        "MINOR": 1,
+        "PATCH": 0,
         "BUILD": 0
     },
     "KSP_VERSION": {

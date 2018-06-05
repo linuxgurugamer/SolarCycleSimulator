@@ -23,21 +23,17 @@
  * is purely coincidental.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using KSP.IO;
 
 namespace WhitecatIndustries
 {
     public class SCSData : MonoBehaviour
     {
-        public static string FilePath = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/SCS/Plugins/PluginData/Data.cfg";
+        public static string FilePath;
 
         public static void SaveInfo()
         {
+            FilePath = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/SolarCycleSimulator/Plugins/PluginData/Data.cfg";
             ConfigNode NFile = new ConfigNode();
             ConfigNode Original = ConfigNode.Load(FilePath);
 
@@ -67,6 +63,7 @@ namespace WhitecatIndustries
 
         public static void LoadInfo()
         {
+            FilePath = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/SolarCycleSimulator/Plugins/PluginData/Data.cfg";
             ConfigNode Original = ConfigNode.Load(FilePath);
 
                 if (Original.CountNodes > 0)
