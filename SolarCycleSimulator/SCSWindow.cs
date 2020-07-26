@@ -25,13 +25,17 @@
 
 using UnityEngine;
 using KSP.UI.Screens;
+using ToolbarControl_NS;
+using ClickThroughFix;
 
 namespace WhitecatIndustries
 {
-    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
+    [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
     class SCSWindow : MonoBehaviour
     {
-        public static ApplicationLauncherButton button = null;
+        static ToolbarControl toolbarControl;
+
+        // public static ApplicationLauncherButton button = null;
         public static Rect windowPosition = new Rect(300, 60, 220, 300);
         public static Rect detailsWindowPosition = new Rect(300, 400, 200, 230);
         private static GUIStyle windowStyle;
@@ -42,6 +46,8 @@ namespace WhitecatIndustries
         private static Vector2 scrollPos = Vector2.zero;
         private static Texture texture = null;
         private static bool showGui = false;
+        static bool hideUI = false;
+        static bool paused = false;
         private static bool showDetails = false;
 
         public static ConfigNode CurrentUICycle;
@@ -54,12 +60,20 @@ namespace WhitecatIndustries
             buttonStyle = new GUIStyle(HighLogic.Skin.button);
             scrollStyle = new GUIStyle(HighLogic.Skin.scrollView);
 
+#if false
             GameEvents.onGUIApplicationLauncherReady.Remove(ReadyEvent);
             GameEvents.onGUIApplicationLauncherReady.Add(ReadyEvent);
             GameEvents.onGUIApplicationLauncherDestroyed.Remove(DestroyEvent);
             GameEvents.onGUIApplicationLauncherDestroyed.Add(DestroyEvent);
+#endif
+            InitializeToobar();
+
         }
 
+        internal const string MODID = "SolarCycleSimulator_NS";
+        internal const string MODNAME = "Solar Cycle Simulator";
+
+#if false
         public void ReadyEvent()
         {
             if (ApplicationLauncher.Ready && button == null)
@@ -69,12 +83,38 @@ namespace WhitecatIndustries
                 button = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null, Scene, texture);
             }
         }
+#endif
+        void InitializeToobar()
+        {
+            if (toolbarControl == null)
+            {
+                toolbarControl = gameObject.AddComponent<ToolbarControl>();
+                toolbarControl.AddToAllToolbars(GuiOn, GuiOff,
+                    ApplicationLauncher.AppScenes.TRACKSTATION,
+                    MODID,
+                    "SolarCyclesimButton",
+                  "WhitecatIndustries/SolarCycleSimulator/Icons/Icon",
+                  "WhitecatIndustries/SolarCycleSimulator/Icons/Icon",
+                    MODNAME
+                );
+            }
 
+        }
         public void DestroyEvent()
         {
+#if false
             if (button == null) return;
             ApplicationLauncher.Instance.RemoveModApplication(button);
             button = null;
+#endif
+#if false
+            if (toolbarControl != null)
+            {
+                toolbarControl.OnDestroy();
+                Destroy(toolbarControl);
+                toolbarControl = null;
+            }
+#endif
             showGui = false;
         }
 
@@ -90,14 +130,14 @@ namespace WhitecatIndustries
 
         public void OnGUI()
         {
-            if (showGui)
+            if (showGui && !hideUI && !paused)
             {
-                windowPosition = GUILayout.Window(777, windowPosition, OnWindow, "Solar Cycle Manager", windowStyle);
+                windowPosition = ClickThruBlocker.GUILayoutWindow(777, windowPosition, OnWindow, "Solar Cycle Manager", windowStyle);
             }
 
-            if (showDetails)
+            if (showDetails && !hideUI && !paused)
             {
-                detailsWindowPosition = GUILayout.Window(778, detailsWindowPosition, DetailsWindow, "Current Cycle Information", windowStyle);
+                detailsWindowPosition = ClickThruBlocker.GUILayoutWindow(778, detailsWindowPosition, DetailsWindow, "Current Cycle Information", windowStyle);
             }
         }
 
@@ -118,7 +158,7 @@ namespace WhitecatIndustries
             scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Width(200), GUILayout.Height(230));
 
             foreach (ConfigNode node in SCSManager.SolarCycles.GetNodes("CYCLE"))
-            { 
+            {
                 ConfigNode Cycle = node;
                 GUI.skin.label.fontStyle = FontStyle.Normal;
                 GUI.skin.label.fontSize = 12;
@@ -131,7 +171,7 @@ namespace WhitecatIndustries
                     GUILayout.Space(1);
                     GUILayout.Label("Current Solar Cycle: " + Cycle.GetValue("Name"));
                     GUILayout.Space(1);
-                    GUILayout.Label("Duration: " + (KSPUtil.dateTimeFormatter.PrintTime(double.Parse(Cycle.GetValue("Duration")),1,false)));
+                    GUILayout.Label("Duration: " + (KSPUtil.dateTimeFormatter.PrintTime(double.Parse(Cycle.GetValue("Duration")), 1, false)));
                     GUILayout.Space(1);
                     GUILayout.Label("Start Date: " + (KSPUtil.dateTimeFormatter.PrintDate(double.Parse(Cycle.GetValue("StartTime")), true, false)));
                     GUILayout.Space(1);
@@ -146,7 +186,7 @@ namespace WhitecatIndustries
                         showDetails = !showDetails;
                     }
                     GUILayout.EndVertical();
-                }    
+                }
             }
 
             GUILayout.EndScrollView();
@@ -188,7 +228,7 @@ namespace WhitecatIndustries
             GUI.DragWindow();
             windowPosition.x = Mathf.Clamp(windowPosition.x, 0f, Screen.width - windowPosition.width);
             windowPosition.y = Mathf.Clamp(windowPosition.y, 0f, Screen.height - windowPosition.height);
-       
+
         }
     }
 }

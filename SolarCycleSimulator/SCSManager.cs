@@ -88,12 +88,15 @@ namespace WhitecatIndustries
             ListNode = Cycle;
 
             {
-                double Duration = double.Parse(Cycle.GetValue("Duration"));
-                double CurrentCycleStartTime = double.Parse(Cycle.GetValue("StartTime"));
-                double CurrentCycleEndTime = double.Parse(Cycle.GetValue("EndTime"));
+                double Duration = 0;
+                double.TryParse(Cycle.GetValue("Duration"), out Duration);
+                double CurrentCycleStartTime = 0;
+                double.TryParse(Cycle.GetValue("StartTime"), out CurrentCycleStartTime);
+                double CurrentCycleEndTime = 0;
+                double.TryParse(Cycle.GetValue("EndTime"), out CurrentCycleEndTime);
                 double PercentThrough = (((HighLogic.CurrentGame.UniversalTime + 1.0) - CurrentCycleStartTime) / Duration) * 100; // Maybe Needs work 
 
-                if (CurrentCycleEndTime == null) return;
+                if (CurrentCycleEndTime == 0) return;
                 if (HighLogic.CurrentGame.UniversalTime >= CurrentCycleEndTime)
                 {
                     print("WhitecatIndustries SCS - Solar Cycle Complete");
