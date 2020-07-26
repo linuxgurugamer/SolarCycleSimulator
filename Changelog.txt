@@ -3,6 +3,7 @@
 	Added support for clickThroughblocker
 	Added InstllChecker
 	Added AssemblyVersion.tt
+	Moved PluginData to mod dir
 
 Version 1.1.0.1 - 4 Jun 2018
  - Correct settings file path names

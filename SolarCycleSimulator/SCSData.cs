@@ -33,7 +33,7 @@ namespace WhitecatIndustries
 
         public static void SaveInfo()
         {
-            FilePath = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/SolarCycleSimulator/Plugins/PluginData/Data.cfg";
+            FilePath = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/SolarCycleSimulator/PluginData/Data.cfg";
             ConfigNode NFile = new ConfigNode();
             ConfigNode Original = ConfigNode.Load(FilePath);
 
@@ -63,7 +63,7 @@ namespace WhitecatIndustries
 
         public static void LoadInfo()
         {
-            FilePath = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/SolarCycleSimulator/Plugins/PluginData/Data.cfg";
+            FilePath = KSPUtil.ApplicationRootPath + "GameData/WhitecatIndustries/SolarCycleSimulator/PluginData/Data.cfg";
             ConfigNode Original = ConfigNode.Load(FilePath);
 
                 if (Original.CountNodes > 0)
