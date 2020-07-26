@@ -28,7 +28,7 @@
 # 0:1.3
 
 # 1:GAMEDIR, VERSIONFILE [, GITHUBREPO ]
-1:SolarCycleSimulator, SolarCycleSimulator.version
+1:WhitecatIndustries/SolarCycleSimulator, SolarCycleSimulator.version
 
 # 2:PROJNAME, PROJFILE, VERSIONFILE, PLUGINSFOLDER
 2:SolarCycleSimulator,SolarCycleSimulator/SolarCycleSimulator.csproj,SolarCycleSimulator.version,GameData/WhitecatIndustries/SolarCycleSimulator/Plugins
